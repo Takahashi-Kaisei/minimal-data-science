@@ -1,5 +1,5 @@
 FROM nvidia/cuda:13.2.0-cudnn-devel-ubuntu24.04
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.12 /uv /uvx /bin/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \

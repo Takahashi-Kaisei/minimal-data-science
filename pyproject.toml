@@ -21,7 +21,9 @@ cuda = [
     "torch==2.10.0", # 後述の sources 設定で CUDA版を指定
 ]
 dev = [
-    "ipykernel"
+    "ipykernel",
+    "pytest",
+    "ruff"
 ]
 
 [tool.uv.sources]
