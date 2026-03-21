@@ -14,7 +14,7 @@ RUN apt-get install -y curl
 ```
 
 この時、apt-get updateはキャッシュされるため、この後Dockerfileを更新し、他のツールをinstallするように変更しても、apt-get updateはキャッシュされるため、updateは実行されず、apt-get install -y curlの部分だけが更新されることになる。
-このため、apt-get updateは常に最新の状態で実行されるようにするために、ために&&で繋げるのがベストプラクティスである。
+このため、apt-get updateは常に最新の状態で実行されるようにするために、&&で繋げるのがベストプラクティスである。
 
 また、以下のコマンドを最後に追加することで、イメージのサイズを小さくすることができる。
 ```
