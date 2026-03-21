@@ -1,36 +1,45 @@
-# プロジェクトをパッケージ化するために使う設定。
 [build-system]
-requires = ["uv_build >= 0.10.10, <0.11.0"]
+# uvエコシステムで最速かつ一貫性のあるビルドバックエンド
+requires = ["uv-build >= 0.10.10, <0.11.0"]
 build-backend = "uv_build"
 
 [project]
-name = "minimal_data_science"
-version = "0.0.1"
-description = "minimal repo for data science"
-authors = [
-    { name = "Kaise" },
+name = "minimal-data-science"
+version = "0.1.0"
+description = "Seamless local(Mac/MPS) and remote(Linux/CUDA) environment"
+authors = [{ name = "Kaise" }]
+readme = "README.md"
+requires-python = ">=3.13, <3.14"
+
+[dependency-groups]
+# Mac(MPS) で開発する時に使うグループ
+mac = [
+    "torch", # PyPI から標準の torch が入る
+]
+# リモート(CUDA) で開発する時に使うグループ
+cuda = [
+    "torch==2.10.0", # 後述の sources 設定で CUDA版を指定
+]
+dev = [
+    "ipykernel"
 ]
 
-readme = "README.md"
-license = { text = "MIT" }
-classifiers = [
-    "Programming Language :: Python :: 3",
-]
-dependencies = [
-    "pip",
-    "pytest",
-    "python-dotenv",
-    "ruff",
-]
-requires-python = ">=3.12.0"
+[tool.uv.sources]
+# 「cudaグループをインストールする時だけ」特定のインデックスを見るように指示
+# 参考: https://zenn.dev/turing_motors/articles/ab155fe6653660
+"torch" = { index = "torch-cu129", group = "cuda" }
+
+[[tool.uv.index]]
+name = "torch-cu129"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true
 
 [tool.ruff]
 line-length = 99
-src = ["minimal_data_science"]
-include = ["pyproject.toml", "minimal_data_science/**/*.py"]
+src = ["src"]
 
 [tool.ruff.lint]
-extend-select = ["I"]  # Add import sorting
+select = ["E", "F", "I", "W"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["minimal_data_science"]
