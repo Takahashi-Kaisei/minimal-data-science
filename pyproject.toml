@@ -1,38 +1,50 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+# uvエコシステムで最速かつ一貫性のあるビルドバックエンド
+requires = ["uv-build >= 0.10.10, <0.11.0"]
+build-backend = "uv_build"
 
 [project]
-name = "minimal_data_science"
-version = "0.0.1"
-description = "minimal repo for data science"
-authors = [
-  { name = "Kaise" },
-]
-
+name = "minimal-data-science"
+version = "0.1.0"
+description = "Seamless local(Mac/MPS) and remote(Linux/CUDA) environment"
+authors = [{ name = "Kaise" }]
 readme = "README.md"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    
-]
-dependencies = [
-    "pip",
-    "pytest",
-    "python-dotenv",
-    "ruff",
-]
-requires-python = "~=3.13.0"
+requires-python = ">=3.13, <3.14"
 
+# 環境マーカーを使用してOSごとに依存するPyTorchを分岐させる
+dependencies = [
+    "torch>=2.10.0; sys_platform == 'darwin'",
+    "torch==2.10.0+cu129; sys_platform == 'linux'",
+    "numpy>=2.4.3",
+]
+
+[dependency-groups]
+# 開発用途のツールのみを定義し、OSの分岐には使用しない
+dev = [
+    "ipykernel",
+    "pytest",
+    "ruff"
+]
+
+# Linux環境のみCUDAインデックスを参照するようにマーカーを設定する
+# 参考: https://zenn.dev/turing_motors/articles/ab155fe6653660
+[tool.uv.sources]
+torch = [
+    { index = "torch-cu129", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "torch-cu129"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true
 
 [tool.ruff]
 line-length = 99
-src = ["minimal_data_science"]
-include = ["pyproject.toml", "minimal_data_science/**/*.py"]
+src = ["src"]
 
 [tool.ruff.lint]
-extend-select = ["I"]  # Add import sorting
+select = ["E", "F", "I", "W"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["minimal_data_science"]
 force-sort-within-sections = true
-

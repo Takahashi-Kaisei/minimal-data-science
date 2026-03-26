@@ -1,24 +1,21 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
 {
-// 	"hostRequirements": {
-//     "gpu": "optional"
-//   },
-	// gpuを全て使う設定。--rmはコンテナ終了後に自動で削除するオプション。
-    "runArgs": [
-        "--gpus",
-        "all",
-		"--rm"
-    ],
-	"name": "template dev container",
+	"name": "template environment",
 	"build": {
-		// // Sets the run context to one level up instead of the .devcontainer folder.
-		// "context": "..",
-		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-		"dockerfile": "../Dockerfile"
+		"dockerfile": "../Dockerfile",
+		"dockerignore": "../.dockerignore"
 	},
-
-	// Features to add to the dev container. More info: https://containers.dev/features.
+	// --rmはコンテナ終了後に自動で削除するオプション。
+	"runArgs": [
+		"--gpus",
+		"all",
+		"--rm"
+	],
+	"workspaceFolder": "/usr/src/app",
+	"mounts": [
+		"source=uv-python-cache,target=/python,type=volume",
+		"source=uv-package-cache,target=/root/.cache/uv,type=volume"
+	],
+	"workspaceMount": "source=${localWorkspaceFolder},target=${containerWorkspaceFolder},type=bind,consistency=cached",
 	// devcontainersが提供する基本的なツール群をインストール。Dockerfileにaptを書きまくる必要がなくなる。
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2.5.7": {
@@ -28,17 +25,26 @@
 			"username": "vscode"
 		}
 	},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Uncomment the next line to run commands after the container is created.
-	// "postCreateCommand": "cat /etc/os-release",
-
-	// Configure tool-specific properties.
+	"containerEnv": {
+		"UV_PYTHON_INSTALL_DIR": "/python",
+		"UV_LINK_MODE": "copy" // ボリュームマウント上でのリンクエラーを防ぐ
+	},
+	// コンテナ作成後に自動で環境を同期
+	// "postCreateCommand": "uv sync --group dev",
+	"postCreateCommand": "uv sync",
 	// 欲しいものがある場合、拡張機能IDをこの中に追加する。
+	// "-ms-python.python"のように先頭に"-"をつけると、拡張機能をオプトアウトできる。
 	"customizations": {
 		"vscode": {
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/src/app/.venv/bin/python",
+				"python.terminal.activateEnvInSelectedTerminal": true,
+				"editor.formatOnSave": true,
+				"editor.codeActionsOnSave": {
+					"source.fixAll.ruff": "always",
+					"source.organizeImports.ruff": "always"
+				}
+			},
 			"extensions": [
 				"ms-python.python",
 				"njpwerner.autodocstring",
@@ -53,7 +59,4 @@
 			]
 		}
 	}
-	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "devcontainer"
 }
-
