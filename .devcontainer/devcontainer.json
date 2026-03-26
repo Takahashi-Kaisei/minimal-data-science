@@ -30,7 +30,8 @@
 		"UV_LINK_MODE": "copy" // ボリュームマウント上でのリンクエラーを防ぐ
 	},
 	// コンテナ作成後に自動で環境を同期
-	"postCreateCommand": "uv sync --group dev --group cuda",
+	// "postCreateCommand": "uv sync --group dev",
+	"postCreateCommand": "uv sync",
 	// 欲しいものがある場合、拡張機能IDをこの中に追加する。
 	// "-ms-python.python"のように先頭に"-"をつけると、拡張機能をオプトアウトできる。
 	"customizations": {
