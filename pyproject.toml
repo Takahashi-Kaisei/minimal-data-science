@@ -11,25 +11,27 @@ authors = [{ name = "Kaise" }]
 readme = "README.md"
 requires-python = ">=3.13, <3.14"
 
+# 環境マーカーを使用してOSごとに依存するPyTorchを分岐させる
+dependencies = [
+    "torch>=2.10.0; sys_platform == 'darwin'",
+    "torch==2.10.0+cu129; sys_platform == 'linux'",
+    "numpy>=2.4.3",
+]
+
 [dependency-groups]
-# Mac(MPS) で開発する時に使うグループ
-mac = [
-    "torch", # PyPI から標準の torch が入る
-]
-# リモート(CUDA) で開発する時に使うグループ
-cuda = [
-    "torch==2.10.0", # 後述の sources 設定で CUDA版を指定
-]
+# 開発用途のツールのみを定義し、OSの分岐には使用しない
 dev = [
     "ipykernel",
     "pytest",
     "ruff"
 ]
 
-[tool.uv.sources]
-# 「cudaグループをインストールする時だけ」特定のインデックスを見るように指示
+# Linux環境のみCUDAインデックスを参照するようにマーカーを設定する
 # 参考: https://zenn.dev/turing_motors/articles/ab155fe6653660
-"torch" = { index = "torch-cu129", group = "cuda" }
+[tool.uv.sources]
+torch = [
+    { index = "torch-cu129", marker = "sys_platform == 'linux'" },
+]
 
 [[tool.uv.index]]
 name = "torch-cu129"
