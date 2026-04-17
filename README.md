@@ -51,8 +51,8 @@ uv sync
 動作確認（Verification）:
 
 ```bash
-python -c "import torch; print(torch.__version__)"
-python -c "import torch; print(torch.backends.mps.is_available())"
+uv run python -c "import torch; print(torch.__version__)"
+uv run python -c "import torch; print(torch.backends.mps.is_available())"
 ```
 
 > Apple Silicon 環境では `True` が期待値です。
@@ -76,8 +76,8 @@ uv sync
 動作確認（Verification）:
 
 ```bash
-python -c "import torch; print(torch.__version__)"
-python -c "import torch; print(torch.cuda.is_available())"
+uv run python -c "import torch; print(torch.__version__)"
+uv run python -c "import torch; print(torch.cuda.is_available())"
 ```
 
 > GPUが正しく使える場合は `True` が期待値です。
