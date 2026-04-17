@@ -7,62 +7,131 @@
 
 ## 概要
 
-このテンプレートリポジトリは、武蔵野大学データサイエンス学部に所属する学生向けのものです。
+このテンプレートは、武蔵野大学データサイエンス学部の学生向けに、
+**ローカル（macOS / MPS）** と **リモート（Linux / CUDA）** を切り分けて運用できるように設計しています。
 
-- 想定OS環境
+- 想定 OS
     - ローカル: macOS（MPS）
-    - リモート(GPUサーバー): Linux（CUDA）
-
-- パッケージ管理
-    - `uv`
-
-## 特徴など
-
-- **Python 3.13 固定運用**（[pyproject.toml](pyproject.toml)）
-    - 変更するための手順は用意していないので、必要に応じて手動で変更すること。
-- **OSごとにtorchを自動切り替え(environment markers)**
-  - macOS: `torch>=2.10.0`
-  - Linux: `torch==2.10.0+cu129`（PyTorch CUDA indexを使用）
-    ※ 一般的には、ローカルでもGPUサーバーでもdocker containerを使用して開発することが多いが、PCが重くなったり、containerのbuildが面倒だったりのボトルネックが発生するため、ローカルではMPS版、GPUサーバーではCUDA版というように完全に切り分けて運用することを想定している。
-- **Dev Container対応**
-  - GPUサーバーでの環境構築を簡単にするため、VS CodeのDev Containersを利用可能にしている。（[.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)）
+    - リモート（GPUサーバー）: Linux（CUDA）
+- パッケージ管理（Package Management）: `uv`
+- Python バージョン（Python Version）: **3.13 固定**
 
 ---
 
-## セットアップ（ローカル）
+## このREADMEのゴール
 
-前提:
-- `uv` インストール済み
-- Python 3.13 系が利用可能
+このREADMEは、**初学者が最短で環境構築（Setup）を完了すること**を目的にしています。
+
+1. まずは「クイックスタート（Quick Start）」を実行
+2. うまくいかない場合は「トラブルシューティング（Troubleshooting）」を参照
+3. 背景や詳細は「関連ドキュメント（Docs）」へ
+
+---
+
+## クイックスタート（Quick Start）
+
+### 0)
+
+- このリポジトリにアクセスし、右上の「Use this template」を押下し、このリポジトリを基盤に自分のリポジトリを作成します。
+- 作成したリポジトリをクローンします。
+    - ※ GPUサーバーではgitの問題でcloneできない可能性、cloneできてもuserが異なる可能性があります。(Troubleshooting参照)
+
+### 1) ローカル（macOS / MPS）
+
+前提（Prerequisites）:
+- `uv` が使える
+- Python 3.13 系が使える
 
 手順:
-1. ターミナルにて以下のコマンドを実行
 
 ```bash
 uv sync
 ```
 
-セットアップ完了
+動作確認（Verification）:
+
+```bash
+python -c "import torch; print(torch.__version__)"
+python -c "import torch; print(torch.backends.mps.is_available())"
+```
+
+> Apple Silicon 環境では `True` が期待値です。
+
+### 2) GPUサーバー（Linux / CUDA + Dev Container）
+
+前提（Prerequisites）:
+- GPUサーバーに SSH 接続できる
+- VS Code でこのリポジトリを開ける
+
+手順:
+1. SSH 接続先でこのリポジトリを VS Code で開く
+2. コマンドパレット（`command + shift + p`）で
+     `Dev Containers: Rebuild Without Cache and Reopen in Container` を実行
+3. コンテナ内ターミナルで以下を実行
+
+```bash
+uv sync
+```
+
+動作確認（Verification）:
+
+```bash
+python -c "import torch; print(torch.__version__)"
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+> GPUが正しく使える場合は `True` が期待値です。
 
 ---
 
-## セットアップ（GPUサーバー）
+## このテンプレートの特徴
 
-前提:
-- GPUサーバーにSSHでアクセス可能
-- 自分のユーザーディレクトリにこのリポジトリをクローンしている。または、このリポジトリから派生したリポジトリをクローンしている。
+- **Python 3.13 固定運用**（[pyproject.toml](pyproject.toml)）
+- **OSごとに PyTorch を自動切り替え（Environment Markers）**
+    - macOS: `torch>=2.10.0`
+    - Linux: `torch==2.10.0+cu129`（PyTorch CUDA index を使用）
+- **Dev Container 対応**（[.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)）
 
-1. SSHでGPUサーバーに接続
-2. minimal-data-science(または、minimal-data-scienceから派生したリポジトリ)をカレントディレクトリとしてVS Codeで開く。
-3. vscodeを開いた状態で、コマンドパレット(command + shift + p)から「Dev Containers: Rebuild Without Cache and Reopen in Container」を選択し、実行する。
-    ※ ビルドには時間がかかるため、気長に待つこと。
-4. コンテナ内のVS Codeターミナルで以下のコマンドを実行
+---
 
-```bash
-uv sync
-```
+## トラブルシューティング（Troubleshooting）
 
-セットアップ完了
+### GPUサーバーで`git clone`できない
+
+ssh-agentなどを利用してローカルと同じユーザーでアクセスできるようにするとシームレスにcloneできます。(slackの#gpu端末利用者向けアナウンス を参照)
+
+面倒な場合は以下の手順を踏む。
+- ローカルでclone
+- zip化
+- `scp` or `rsync`でGPUサーバーにコピー
+- unzipして展開
+
+### `uv: command not found` が出る
+
+- 症状: `uv sync` が実行できない
+- 原因: `uv` が未インストール、またはPATH未設定
+- 対処: `uv` をインストールし、シェルを再起動して再実行
+
+### Dev Container のビルドが失敗する
+
+- 症状: `Rebuild Without Cache` 実行時に途中で停止
+- 原因: ネットワーク、リモートのストレージがいっぱい、etc.
+- 対処:
+    - ネットワークが原因 -> ネットワークを確認
+    - リモートのストレージが原因 -> `df -h` で空き容量を確認。自分で対処できない場合はslackで相談
+
+### `torch.backends.mps.is_available()` が `False` になる（macOS）
+
+- 症状: MPS が使えない
+- 原因: Intel Mac 利用、または環境依存
+- 対処: Apple Silicon Mac であることを確認。それ以外ならMPSは使えないため、ローカルでGPUを使いたい場合は別途GPUサーバーを利用。
+
+---
+
+## 関連ドキュメント（Docs）
+
+- Docker / CUDA運用の背景: [docs/docker-memo/001_dockerfile-best-practice.md](docs/docker-memo/001_dockerfile-best-practice.md)
+- Copilot instructions の入口: [.github/copilot-instructions.md](.github/copilot-instructions.md)
 
 ---
 
@@ -70,23 +139,21 @@ uv sync
 
 ```text
 .
-├── .devcontainer/ <- dev container関連の設定ファイルを格納するディレクトリ
-├── data/ <- データセットを格納するディレクトリ
-├── docs/ <- ドキュメントを格納するディレクトリ(現状は、かなり適当な運用)
-├── notebooks/ <- Jupyter Notebookを格納するディレクトリ(001, 002, 003...のように、番号を振って管理することを想定している。)
-├── src/minimal_data_science/ <- ソースコードを格納するディレクトリ(運用方法は未定)
-├── tests/ <- テストコードを格納するディレクトリ(まだテストを走らせていない。運用方法は未定)
-├── Dockerfile <- GPUサーバーでの開発環境を構築するためのDockerfileであり、できるだけシンプルな構成にしている。
-├── Makefile <- 運用未定
-└── pyproject.toml <- パッケージ管理ファイル。OSに依存するライブラリは、environment markersを用いて自動で切り替えるようにしている。
+├── .devcontainer/                    <- Dev Container 設定
+├── data/                             <- データ（raw / external / processed）
+├── docs/                             <- 背景など補足ドキュメント
+├── notebooks/                        <- Notebook（実験・検証）
+├── src/minimal_data_science/         <- Python モジュール
+├── tests/                            <- テストコード
+├── Dockerfile                        <- GPUサーバー向け開発環境
+├── Makefile                          <- 未整備
+└── pyproject.toml                    <- 依存関係・ツール設定
 ```
 
 ---
 
 ## ライセンス
 
-このテンプレートリポジトリは、Cookiecutter Data Science をベースにして作成しており、MIT Licenseのもとで公開されている。
+このテンプレートは Cookiecutter Data Science をベースにしており、MIT License のもとで公開されています。
 
-もし、このリポジトリをベースに新しいプロジェクトを作成した場合、そのプロジェクトもMIT Licenseのもとで公開する義務が発生するので注意すること。
-
-※ [LICENSE](LICENSE) を参照
+詳細は [LICENSE](LICENSE) を参照してください。
